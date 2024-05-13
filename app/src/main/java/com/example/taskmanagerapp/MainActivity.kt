@@ -5,9 +5,17 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
+import com.example.taskmanagerapp.ViewModel.ModelTaskView
 import com.example.taskmanagerapp.databinding.ActivityMainBinding
+import com.example.taskmanagerapp.models.Task
+import com.example.taskmanagerapp.utils.Status
+import com.example.taskmanagerapp.utils.clearTaskForm
+import com.example.taskmanagerapp.utils.longToastShow
 import com.example.taskmanagerapp.utils.setupDialog
-import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.textfield.TextInputEditText
+import java.util.Date
+import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
     private val binding :ActivityMainBinding by lazy {
@@ -28,6 +36,14 @@ class MainActivity : AppCompatActivity() {
             setupDialog(R.layout.loading_screen)
         }
     }
+
+    private val viewTaskModel  : ModelTaskView by lazy {
+        ViewModelProvider(this)[ModelTaskView::class.java]
+    }
+    val newTitle = addTaskDialog.findViewById<TextInputEditText>(R.id.Topic)
+    val newContent = addTaskDialog.findViewById<TextInputEditText>(R.id.content)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -40,28 +56,50 @@ class MainActivity : AppCompatActivity() {
 
 
         binding.addtaskbtn.setOnClickListener{
+//            clearTaskForm(newTitle,newContent)
             addTaskDialog.show()
         }
         //edit task save
         val savetaskBtn = addTaskDialog.findViewById<Button>(R.id.savebtn)
         savetaskBtn.setOnClickListener{
-            val title = addTaskDialog.findViewById<TextInputLayout>(R.id.Topic)
-            val content = addTaskDialog.findViewById<TextInputLayout>(R.id.content)
 
-            if(title != null || content != null){
-                Toast.makeText(this,"Fill all the fileds",Toast.LENGTH_SHORT).show()
+
+            if(newTitle != null && newContent != null){
+                val addnewTask = Task(
+                    UUID.randomUUID().toString(),
+                    newTitle.text.toString().trim(),
+                    newContent.text.toString().trim(),
+                    Date()
+
+                )
+                viewTaskModel.insertTask(addnewTask).observe(this){
+                    when(it.status){
+                        Status.LOADING->{
+                            loadingTask.show()
+                        }
+                        Status.ERROR->{
+                            loadingTask.dismiss()
+                            it.message?.let { it1 -> longToastShow(it1) }
+
+                        }
+                        Status.SUCCESS->{
+                            loadingTask.dismiss()
+                            if(it.data?.toInt() != -1){
+                                longToastShow("Task added successfully")
+
+                            }
+                        }
+                    }
+                }
 
             }
-            else{
-                Toast.makeText(this,"Task added successfully",Toast.LENGTH_SHORT).show()
-                loadingTask.show()
-            }
+
         }
         //update task save
         val updatetaskBtn = updateTaskDialog.findViewById<Button>(R.id.updatebtn)
         updatetaskBtn.setOnClickListener{
-            val title = addTaskDialog.findViewById<TextInputLayout>(R.id.UpdateTopic)
-            val content = addTaskDialog.findViewById<TextInputLayout>(R.id.Updatecontent)
+            val title = addTaskDialog.findViewById<TextInputEditText>(R.id.UpdateTopic)
+            val content = addTaskDialog.findViewById<TextInputEditText>(R.id.Updatecontent)
 
             if(title != null || content != null){
                 Toast.makeText(this,"Task updated successfully",Toast.LENGTH_SHORT).show()
