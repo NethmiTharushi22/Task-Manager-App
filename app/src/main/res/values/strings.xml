@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Task Manager App</string>
+    <string name="addyournote">AddYourNote</string>
+    <string name="add_your_note">Add Your Task</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="enter_the_titile">Enter the titile</string>
+    <string name="enter_your_note">Enter your task</string>
+    <string name="tasks">Tasks</string>
+    <string name="titile">Titile</string>
+    <string name="content">Content</string>
+    <string name="edittask">Edit Your Task</string>
+    <string name="update">Update</string>
+    <string name="date">date</string>
 </resources>
