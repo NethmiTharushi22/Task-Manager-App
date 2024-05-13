@@ -10,6 +10,7 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import com.example.taskmanagerapp.models.Task
+import com.example.taskmanagerapp.taskdao.TaskInterface
 import kotlin.concurrent.Volatile
 
 @Database(
@@ -20,6 +21,8 @@ import kotlin.concurrent.Volatile
 TypeConverter::class
 )
 abstract class TaskDB:RoomDatabase() {
+
+ abstract val taskDao: TaskInterface
 
     companion object {
 
