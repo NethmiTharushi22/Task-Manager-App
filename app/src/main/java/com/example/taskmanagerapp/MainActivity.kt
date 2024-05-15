@@ -45,9 +45,31 @@ class MainActivity : AppCompatActivity() {
         ViewModelProvider(this).get(ModelTaskView::class.java)
     }
     private val recyclerViewAdepter:AdepterView by lazy {
-        AdepterView()
-    }
+        AdepterView{
+            position, task ->
+            viewTaskModel
 
+                .deleteTaskById(task.id)
+                .observe(this){
+                    when(it.status){
+                        Status.LOADING->{
+                            loadingTask.show()
+                        }
+                        Status.ERROR->{
+                            loadingTask.dismiss()
+                            it.message?.let { it1 -> longToastShow(it1) }
+                        }
+                        Status.SUCCESS->{
+                            loadingTask.dismiss()
+                            if(it.data != -1){
+                                longToastShow("Task deleted successfully")
+                                addTaskDialog.dismiss()
+                            }
+                        }
+                    }
+                }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)

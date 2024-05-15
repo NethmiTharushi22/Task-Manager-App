@@ -12,9 +12,8 @@ interface TaskInterface {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: Task):Long
 
-    @Delete
-    suspend fun deleteTask(task: Task):Int
 
-    @Query("DELETE FROM task WHERE taskId == taskid")
-    suspend fun deleteTaskUsingId(taskId:String)
+    @Query("DELETE FROM Task WHERE taskid = :taskid")
+    suspend fun deleteTaskUsingId(taskid: String): Int
+
 }

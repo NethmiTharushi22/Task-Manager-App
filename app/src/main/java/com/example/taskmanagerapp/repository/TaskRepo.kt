@@ -42,4 +42,20 @@ class TaskRepo(application: Application) {
 
         return result
     }
+
+    fun deleteTaskById(taskid: String): LiveData<Resource<Int>> {
+        val result = MutableLiveData<Resource<Int>>()
+        result.postValue(Resource.Loading())
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val rowsAffected = taskDao.deleteTaskUsingId(taskid)
+                result.postValue(Resource.Success(rowsAffected))
+            } catch (e: Exception) {
+                result.postValue(Resource.Error(e.message ?: "An error occurred"))
+            }
+        }
+
+        return result
+    }
 }

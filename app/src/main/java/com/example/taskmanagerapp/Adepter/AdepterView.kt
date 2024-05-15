@@ -1,8 +1,10 @@
 package com.example.taskmanagerapp.Adepter
 
 import android.view.LayoutInflater
+import android.view.ScrollCaptureCallback
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -11,7 +13,9 @@ import com.example.taskmanagerapp.models.Task
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class AdepterView:
+class AdepterView(
+    private val deleteCallback: (position:Int,task:Task)->Unit
+):
 RecyclerView.Adapter<AdepterView.ViewHolder>(){
 
     private val taskList: ArrayList<Task> = arrayListOf<Task>()
@@ -20,12 +24,14 @@ RecyclerView.Adapter<AdepterView.ViewHolder>(){
         val content:TextView = itemView.findViewById(R.id.taskcontent)
         val date:TextView = itemView.findViewById(R.id.datecontent)
 
+        val deleteImg:ImageView = itemView.findViewById(R.id.deletein)
     }
     fun addAllTasks(newTaskList: List<Task>) {
         taskList.clear()
         taskList.addAll(newTaskList)
         notifyDataSetChanged()
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
        return ViewHolder(
            LayoutInflater.from(parent.context)
@@ -42,6 +48,11 @@ RecyclerView.Adapter<AdepterView.ViewHolder>(){
 
         holder.date.text =formatDate.format(readtask.date)
 
+        holder.deleteImg.setOnClickListener{
+            if(holder.adapterPosition != -1){
+                deleteCallback(holder.adapterPosition,readtask)
+            }
+        }
 
 
     }
