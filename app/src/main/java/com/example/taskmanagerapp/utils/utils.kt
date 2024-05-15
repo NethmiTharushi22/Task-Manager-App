@@ -5,7 +5,6 @@ import android.content.Context
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
-import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
 enum class Status{

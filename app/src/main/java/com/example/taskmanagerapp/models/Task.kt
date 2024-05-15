@@ -10,7 +10,7 @@ data class Task(
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name ="taskid")
     val id :String,
-    @ColumnInfo(name = "Task Title")
+    @ColumnInfo(name = "taskTitle")
     val topic:String,
     val content:String,
     val date: Date

@@ -1,29 +1,45 @@
 package com.example.taskmanagerapp.repository
 
 import android.app.Application
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.taskmanagerapp.Database.TaskDB
 import com.example.taskmanagerapp.models.Task
 import com.example.taskmanagerapp.taskdao.TaskInterface
 import com.example.taskmanagerapp.utils.Resource
-import com.example.taskmanagerapp.utils.Resource.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 
-class TaskRepo (application: Application){
-    private val taskDao:TaskInterface = TaskDB.getInstance(application).taskDao
+class TaskRepo(application: Application) {
+    private val taskDao: TaskInterface = TaskDB.getInstance(application).taskDao()
 
-    fun insertTask(task: Task) = MutableLiveData<Resource<Long>>().apply {
-        postValue(Loading())
+    fun showTaskList() = flow {
+        emit(Resource.Loading())
         try {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val result = taskDao.insertTask(task)
-                    postValue(Success(result))
-                }
-        }catch (e:Exception){
-            postValue(Error(e.message.toString()))
-
+            taskDao.showTaskList().collect { tasks ->
+                emit(Resource.Success(tasks))
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error<List<Task>>(e.message ?: "An error occurred"))
         }
+    }
+
+    fun insertTask(task: Task): LiveData<Resource<Long>> {
+        val result = MutableLiveData<Resource<Long>>()
+        result.postValue(Resource.Loading())
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val taskId = taskDao.insertTask(task)
+                result.postValue(Resource.Success(taskId))
+            } catch (e: Exception) {
+                result.postValue(Resource.Error(e.message ?: "An error occurred"))
+            }
+        }
+
+        return result
     }
 }
