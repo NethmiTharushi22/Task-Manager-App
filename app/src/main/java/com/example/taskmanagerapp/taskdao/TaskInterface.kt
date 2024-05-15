@@ -16,4 +16,11 @@ interface TaskInterface {
     @Query("DELETE FROM Task WHERE taskid = :taskid")
     suspend fun deleteTaskUsingId(taskid: String): Int
 
+  @Update
+    suspend fun updateTask(task: Task):Int
+
+
+//    @Query("UPDATE Task SET taskTitle =:topic ,content=:content WHERE  taskid =:taskid")
+//    suspend fun updatetaskById(taskid: String,topic :String,content:String):Int
+
 }

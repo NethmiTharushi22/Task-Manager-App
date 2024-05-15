@@ -1,3 +1,6 @@
+package com.example.taskmanagerapp
+
+
 import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -44,73 +47,43 @@ class MainActivity : AppCompatActivity() {
     private val viewTaskModel: ModelTaskView by lazy {
         ViewModelProvider(this).get(ModelTaskView::class.java)
     }
-    private val recyclerViewAdepter:AdepterView by lazy {
-        AdepterView{
-            position, task ->
-            viewTaskModel
 
-                .deleteTaskById(task.id)
-                .observe(this){
-                    when(it.status){
-                        Status.LOADING->{
-                            loadingTask.show()
-                        }
-                        Status.ERROR->{
-                            loadingTask.dismiss()
-                            it.message?.let { it1 -> longToastShow(it1) }
-                        }
-                        Status.SUCCESS->{
-                            loadingTask.dismiss()
-                            if(it.data != -1){
-                                longToastShow("Task deleted successfully")
-                                addTaskDialog.dismiss()
-                            }
-                        }
-                    }
-                }
-        }
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        binding.taskRecyler.adapter = recyclerViewAdepter
-
         val cancelBtn = addTaskDialog.findViewById<Button>(R.id.cancelbtn)
-        val updateCancelBtn = updateTaskDialog.findViewById<Button>(R.id.updatecancelbtn)
-
         cancelBtn?.setOnClickListener { addTaskDialog.dismiss() }
-        updateCancelBtn?.setOnClickListener{ updateTaskDialog.dismiss() }
 
-
-        binding.addtaskbtn.setOnClickListener{
+        binding.addtaskbtn.setOnClickListener {
             addTaskDialog.show()
         }
-        //edit task save
+
+        // Edit task save
         val savetaskBtn = addTaskDialog.findViewById<Button>(R.id.savebtn)
-        savetaskBtn.setOnClickListener{
+        savetaskBtn.setOnClickListener {
             val newTitle = addTaskDialog.findViewById<TextInputEditText>(R.id.Topic)
             val newContent = addTaskDialog.findViewById<TextInputEditText>(R.id.content)
 
-            if(newTitle != null && newContent != null){
+            if (newTitle != null && newContent != null) {
                 val addnewTask = Task(
                     UUID.randomUUID().toString(),
                     newTitle.text.toString().trim(),
                     newContent.text.toString().trim(),
                     Date()
                 )
-                viewTaskModel.insertTask(addnewTask).observe(this){
-                    when(it.status){
-                        Status.LOADING->{
+                viewTaskModel.insertTask(addnewTask).observe(this) {
+                    when (it.status) {
+                        Status.LOADING -> {
                             loadingTask.show()
                         }
-                        Status.ERROR->{
+                        Status.ERROR -> {
                             loadingTask.dismiss()
                             it.message?.let { it1 -> longToastShow(it1) }
                         }
-                        Status.SUCCESS->{
+                        Status.SUCCESS -> {
                             loadingTask.dismiss()
-                            if(it.data?.toInt() != -1){
+                            if (it.data?.toInt() != -1) {
                                 longToastShow("Task added successfully")
                                 addTaskDialog.dismiss()
                             }
@@ -119,24 +92,83 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        //update task save
-        val updatetaskBtn = updateTaskDialog.findViewById<Button>(R.id.updatebtn)
-        updatetaskBtn.setOnClickListener{
-            val title = addTaskDialog.findViewById<TextInputEditText>(R.id.UpdateTopic)
-            val content = addTaskDialog.findViewById<TextInputEditText>(R.id.Updatecontent)
 
-            if(title != null && content != null){
-                Toast.makeText(this,"Task updated successfully",Toast.LENGTH_SHORT).show()
-                loadingTask.show()
-            }
-            else{
-                Toast.makeText(this,"Fill all the fields",Toast.LENGTH_SHORT).show()
+        // Update task save
+        val updateCancelBtn = updateTaskDialog.findViewById<Button>(R.id.updatecancelbtn)
+        updateCancelBtn?.setOnClickListener { updateTaskDialog.dismiss() }
+
+        val updatetaskBtn = updateTaskDialog.findViewById<Button>(R.id.updatebtn)
+        updatetaskBtn.setOnClickListener {
+            val updatetitle = updateTaskDialog.findViewById<TextInputEditText>(R.id.UpdateTopic)
+            val updateContent = updateTaskDialog.findViewById<TextInputEditText>(R.id.Updatecontent)
+
+            if (updatetitle != null && updateContent != null) {
+                val updateTask = Task(
+                    "", // You need to provide the task ID here
+                    updatetitle.text.toString().trim(),
+                    updateContent.text.toString().trim(),
+                    Date()
+                )
+                viewTaskModel.updateTask(updateTask).observe(this) {
+                    when (it.status) {
+                        Status.LOADING -> {
+                            loadingTask.show()
+                        }
+                        Status.ERROR -> {
+                            loadingTask.dismiss()
+                            it.message?.let { it1 -> longToastShow(it1) }
+                        }
+                        Status.SUCCESS -> {
+                            loadingTask.dismiss()
+                            if (it.data != -1) {
+                                longToastShow("Task updated successfully")
+                                updateTaskDialog.dismiss()
+                            }
+                        }
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Fill all the fields", Toast.LENGTH_SHORT).show()
             }
         }
-        getAlltasks()
+
+        val recyclerViewAdapter: AdepterView by lazy {
+            AdepterView { type, position, task ->
+                if (type == "delete") {
+                    viewTaskModel.deleteTaskById(task.id).observe(this) {
+                        when (it.status) {
+                            Status.LOADING -> {
+                                loadingTask.show()
+                            }
+                            Status.ERROR -> {
+                                loadingTask.dismiss()
+                                it.message?.let { it1 -> longToastShow(it1) }
+                            }
+                            Status.SUCCESS -> {
+                                loadingTask.dismiss()
+                                if (it.data != -1) {
+                                    longToastShow("Task deleted successfully")
+                                    addTaskDialog.dismiss()
+                                }
+                            }
+                        }
+                    }
+                } else if (type == "update") {
+                    // Show the update dialog and set task details
+                    updateTaskDialog.show()
+                    val updatetitle = updateTaskDialog.findViewById<TextInputEditText>(R.id.UpdateTopic)
+                    val updateContent = updateTaskDialog.findViewById<TextInputEditText>(R.id.Updatecontent)
+                    updatetitle.setText(task.topic)
+                    updateContent.setText(task.content)
+                }
+            }
+        }
+
+        binding.taskRecyler.adapter = recyclerViewAdapter
+        getAlltasks(recyclerViewAdapter)
     }
 
-    private fun getAlltasks() {
+    private fun getAlltasks(recyclerViewAdepter:AdepterView) {
         loadingTask.show()
         CoroutineScope(Dispatchers.Main).launch {
             viewTaskModel.showTaskList().collect {

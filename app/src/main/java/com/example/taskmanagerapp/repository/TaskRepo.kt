@@ -58,4 +58,19 @@ class TaskRepo(application: Application) {
 
         return result
     }
+    fun updateTask(task: Task): LiveData<Resource<Int>> {
+        val result = MutableLiveData<Resource<Int>>()
+        result.postValue(Resource.Loading())
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val rowsAffected = taskDao.updateTask(task)
+                result.postValue(Resource.Success(rowsAffected))
+            } catch (e: Exception) {
+                result.postValue(Resource.Error(e.message ?: "An error occurred"))
+            }
+        }
+
+        return result
+    }
 }

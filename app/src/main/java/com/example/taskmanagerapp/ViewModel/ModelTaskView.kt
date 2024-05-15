@@ -13,5 +13,5 @@ class ModelTaskView(application: Application) : AndroidViewModel(application) {
 
     fun deleteTaskById(taskId: String) = taskRepo.deleteTaskById(taskId)
 
-
+    fun updateTask(task: Task) = taskRepo.updateTask(task)
 }
